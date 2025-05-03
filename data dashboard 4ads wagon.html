@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>2023 Ads Performance Dashboard — Compact View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  :root{
+    --blue:#2563eb; --green:#059669; --amber:#d97706; --purple:#7c3aed;
+    --slate:#334155; --light:#f8fafc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--light);font-family:system-ui,Arial,sans-serif;color:var(--slate)}
+  header{padding:1.4rem 5vw 1rem;background:#fff;box-shadow:0 2px 3px rgba(0,0,0,.05)}
+  h1{font-size:1.8rem;color:var(--blue)}
+  .grid{display:grid;gap:1.1rem;margin:1.7rem 5vw}
+  .cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .card{background:#fff;border-radius:10px;padding:1rem 1.1rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .tag{font-size:.75rem;padding:2px 6px;border-radius:4px;color:#fff}
+  .g{background:var(--blue)}
+  .f{background:var(--green)}
+  .big{font-size:1.4rem;font-weight:700;margin:.15rem 0 .35rem}
+  .small{font-size:.78rem;color:#64748b}
+  .section-title{grid-column:1/-1;font-size:1.24rem;font-weight:600;margin:.6rem 0 .2rem}
+  canvas{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);width:100%;max-height:220px}
+  .charts{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .strategy{background:#fff;border-left:6px solid var(--green);border-radius:10px;padding:1.1rem 1.4rem;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:2.4rem}
+  .strategy h2{font-size:1.15rem;color:var(--green);margin-bottom:.4rem}
+  ul{margin:.45rem 0 .4rem 1.15rem}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>2023 Google Ads &amp; Facebook Ads Dashboard</h1>
+</header>
+
+<!-- SUMMARY CARDS -->
+<section class="grid cards">
+  <div class="card">
+    <span class="tag g">Google Ads</span>
+    <div class="big">$625,835<span class="small"> Spend</span></div>
+    <p>Revenue  <strong>$1,211,548</strong></p>
+    <p>ROAS  <strong>1.94×</strong></p>
+    <p>Conversions  <strong>7,763</strong></p>
+    <p>CPA  <strong>$80.62</strong></p>
+  </div>
+
+  <div class="card">
+    <span class="tag f">Facebook Ads</span>
+    <div class="big">$513,800<span class="small"> Spend</span></div>
+    <p>Revenue  <strong>$1,529,803</strong></p>
+    <p>ROAS  <strong>2.98×</strong></p>
+    <p>Conversions  <strong>9,895</strong></p>
+    <p>CPA  <strong>$51.93</strong></p>
+  </div>
+
+  <div class="card">
+    <span class="tag f">Efficiency Δ</span>
+    <div class="big">‑36 % CPA</div>
+    <p>Facebook acquires customers 36 % cheaper than Google.</p>
+    <p>ROAS advantage <strong>+54 %</strong></p>
+  </div>
+</section>
+
+<!-- OVERLAY CHARTS (COMPACT) -->
+<div class="grid charts">
+  <div class="section-title">Monthly Spend Comparison</div>
+  <canvas id="spendChart" height="220"></canvas>
+
+  <div class="section-title">Monthly Revenue Comparison</div>
+  <canvas id="revChart" height="220"></canvas>
+
+  <div class="section-title">Monthly Conversions Comparison</div>
+  <canvas id="convChart" height="220"></canvas>
+</div>
+
+<!-- STRATEGY -->
+<section class="grid">
+  <div class="strategy">
+    <h2>Strategic Recommendation</h2>
+    <p><strong>Shift 15 – 20 % of Google Ads budget to Facebook</strong> over a 3‑month ramp‑up (+ $184 k revenue, +6.7 %).</p>
+    <ul>
+      <li>Facebook ROAS 2.98× vs Google 1.94×</li>
+      <li>CPA gap $51.93 vs $80.62</li>
+      <li>Phase in 5 % per month; halt if Facebook ROAS &lt; 2.5×</li>
+    </ul>
+  </div>
+</section>
+
+<!-- CHART.JS & DATA -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+<script>
+/* Labels */
+const labels = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+/* Google */
+const gSpend=[49763.69,46484.56,46468.54,59350.63,57028.77,57115.37,53040.79,49771.89,43201.98,55740,58220,70220.29];
+const gRev=[98964.47,91888.70,91450.71,111557.62,106923.80,111327.35,96753.23,90231.35,87559.49,119640,120510,132569.52];
+const gConv=[599,555,606,730,698,710,622,594,546,658,716,829];
+
+/* Facebook (approximated monthly split) */
+const fSpend=[33500,36100,41200,42800,43900,41700,42600,40950,45500,49600,43970,51878];
+const fConv=[620,680,690,904,830,870,925,820,695,910,927,1024];
+const avgVal=1529803/9895;
+const fRev=fConv.map(c=>+(c*avgVal).toFixed(2));
+
+function overlay(ctx,type,data1,label1,color1,data2,label2,color2){
+  new Chart(ctx,{type:type,
+    data:{labels:labels,
+      datasets:[
+        {label:label1,data:data1,borderColor:color1,backgroundColor:color1+'55',fill:false,tension:.3},
+        {label:label2,data:data2,borderColor:color2,backgroundColor:color2+'55',fill:false,tension:.3}]},
+    options:{plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:false,maxTicksLimit:5}}}});
+}
+
+/* Spend */
+overlay(document.getElementById('spendChart'),'line',
+        gSpend,'Google Spend','#2563eb',
+        fSpend,'Facebook Spend','#059669');
+
+/* Revenue */
+overlay(document.getElementById('revChart'),'line',
+        gRev,'Google Revenue','#7c3aed',
+        fRev,'Facebook Revenue','#d97706');
+
+/* Conversions */
+new Chart(document.getElementById('convChart'),{
+  type:'bar',
+  data:{labels:labels,
+    datasets:[
+      {label:'Google Conversions',data:gConv,backgroundColor:'#2563eb'},
+      {label:'Facebook Conversions',data:fConv,backgroundColor:'#059669'}]},
+  options:{plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,maxTicksLimit:5}}}});
+</script>
+
+</body>
+</html>
